@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <h2 class="task-title">{{ view.title }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn task-button">Зберегти</button>
+    </form>
+</div>
+
+<style>
+
+.task-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 30px; 
+  color: #6BB1B7; 
+  margin-bottom: 20px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 121, 107, 0.4);
+  transition: all 0.3s ease;
+}
+.task-title:hover {
+  color: #4e8b90;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 12px rgba(0, 121, 107, 0.6);
+}
+
+
+.task-button {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: #6BB1B7;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 2px solid #6BB1B7;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 10px rgba(0, 121, 107, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.task-button:hover {
+  color: #4e8b90;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 12px rgba(0, 121, 107, 0.6);
+  border-color: #4e8b90;
+}
+</style>
+{% endblock %}

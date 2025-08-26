@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load custom_tags %}
+<div class="container mt-3">
+    <h2 class="task-title">{{ task.title }}</h2>
+    <p>{{ task.description }}</p>
+    <p>
+        <span class="status-dot"></span>
+        Статус: <span class="status-badge">{{ task.status }}</span>
+    </p>
+    <p>
+        <span class="priority-dot"></span>
+        Пріоритет: <span class="priority-badge">{{ task.priority }}</span>
+    </p>
+
+    
+    <a href="{% url 'tasks:task-update' task.id %}" class="btn-custom mr-2 particle-btn">Редагувати</a>
+    <a href="{% url 'tasks:task-delete' task.id %}" class="btn-custom btn-danger-custom particle-btn">Видалити</a>
+
+    
+    <div class="comments mt-4">
+        <h3 class="task-title">Коментарі</h3>
+        {% for comment in task.comments.all %}
+            <div class="comment-card mb-2 p-3">
+                <p>{{ comment.content }}</p>
+                {% if comment.media %}
+                    <div class="comment-media">
+                        {% if comment.media.url|endswith:".jpg" or comment.media.url|endswith:".png" or comment.media.url|endswith:".jpeg" %}
+                            <img src="{{ comment.media.url }}" alt="Зображення коментаря" style="max-width: 100%;">
+                        {% elif comment.media.url|endswith:".mp4" %}
+                            <video width="320" height="240" controls>
+                                <source src="{{ comment.media.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        {% else %}
+                            <a href="{{ comment.media.url }}">Завантажити файл</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <small>Автор: {{ comment.author.username }}</small>
+                <form action="{% url 'tasks:comment-like-toggle' comment.id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm like-btn {% if request.user in comment.likes.all %}liked{% else %}not-liked{% endif %}">
+                        Лайк {{ comment.likes.count }}
+                    </button>
+                </form>
+            </div>
+        {% empty %}
+            <p>Коментарі відсутні.</p>
+        {% endfor %}
+    </div>
+
+    
+    <div class="add-comment mt-4">
+        <h4 class="task-title">Додати коментар</h4>
+        <form action="{% url 'tasks:task-detail' task.id %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" class="btn-custom particle-btn mt-2">Відправити</button>
+        </form>
+    </div>
+</div>
+
+<style>
+
+.task-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 30px;
+  color: #6BB1B7;
+  margin-bottom: 20px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 121, 107, 0.4);
+  transition: all 0.3s ease;
+}
+.task-title:hover {
+  color: #4e8b90;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 14px rgba(0, 121, 107, 0.6);
+}
+
+.btn-custom {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #6BB1B7;
+    padding: 6px 14px;
+    border-radius: 12px;
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 8px rgba(0, 121, 107, 0.4);
+    border: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+.btn-custom:hover {
+    color: #4e8b90;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 121, 107, 0.6);
+}
+
+.btn-danger-custom {
+    color: #E53935;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+.btn-danger-custom:hover {
+    color: #b71c1c;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+
+.status-badge, .priority-badge {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: #6BB1B7;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 6px rgba(0, 121, 107, 0.4);
+  margin-left: 8px;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.status-badge:hover, .priority-badge:hover {
+  color: #4e8b90;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 8px rgba(0, 121, 107, 0.6);
+}
+
+
+.status-dot, .priority-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #6BB1B7;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+
+.comment-card {
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 4px 12px rgba(0, 121, 107, 0.3);
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+.comment-card:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 14px rgba(0, 121, 107, 0.5);
+}
+
+
+.like-btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 6px rgba(0, 121, 107, 0.4);
+    color: #6BB1B7;
+    transition: all 0.3s ease;
+}
+.like-btn:hover {
+    color: #4e8b90;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 8px rgba(0, 121, 107, 0.6);
+}
+.like-btn.liked {
+    color: #4e8b90;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+
+.particle-btn {
+    position: relative;
+}
+</style>
+
+<script>
+function createParticles(x, y) {
+  for (let i = 0; i < 80; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    document.body.appendChild(particle);
+
+    const size = Math.random() * 3 + 3;
+    particle.style.width = size + "px";
+    particle.style.height = size + "px";
+    particle.style.left = x + "px";
+    particle.style.top = y + "px";
+
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * 800 + 200;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance;
+
+    requestAnimationFrame(() => {
+      particle.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+      particle.style.opacity = "0";
+    });
+
+    particle.addEventListener("transitionend", () => {
+      particle.remove();
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const particleBtns = document.querySelectorAll(".particle-btn");
+  particleBtns.forEach(btn => {
+    btn.addEventListener("click", e => {
+      const rect = btn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      createParticles(x, y);
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <h2 class="task-title">Список завдань</h2>
+    <a href="{% url 'tasks:task-create'%}" class="btn-custom mb-3 particle-btn">Додати завдання</a>
+
+    <form method="get" class="form-inline mb-3">
+        {{ form.status.label_tag }}
+        {{ form.status }}
+        <button type="submit" class="btn-custom-filter ml-2 particle-btn">Фільтрувати</button>
+    </form>
+
+    <ul class="list-group">
+        {% for task in tasks %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{% url 'tasks:task-detail' task.pk %}" class="task-title-link">{{ task.title }}</a>
+                <span class="status-badge">{{ task.status }}</span>
+                <span class="priority-badge">{{ task.priority }}</span>
+            </div>
+            {% if task.status != 'Виконано' %}
+            <form action="{% url 'tasks:task-complete' task.pk %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-complete particle-btn">Помітити як виконано</button>
+            </form>
+            {% else %}
+            <span class="btn-complete done">Виконано</span>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item">Завдань не знайдено.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<style>
+
+.task-title { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 30px; color: #6BB1B7; margin-bottom: 20px; padding: 6px 12px; border-radius: 8px; display: inline-block; background-color: rgba(255,255,255,0.6); box-shadow: 0 0 10px rgba(0,121,107,0.4); transition: all 0.3s ease; }
+.task-title:hover { color:#4e8b90; background-color: rgba(255,255,255,0.8); box-shadow:0 0 12px rgba(0,121,107,0.6); }
+
+.btn-custom, .btn-custom-filter, .btn-complete {
+  font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 16px; color: #6BB1B7;
+  padding: 6px 14px; border-radius: 8px; display:inline-block; background-color: rgba(255,255,255,0.6);
+  box-shadow:0 0 8px rgba(0,121,107,0.4); transition: all 0.3s ease; border:none; cursor:pointer; text-decoration:none;
+}
+.btn-custom:hover, .btn-custom-filter:hover, .btn-complete:hover { color:#4e8b90; background-color: rgba(255,255,255,0.8); box-shadow:0 0 10px rgba(0,121,107,0.6); }
+.btn-complete.done { cursor: default; }
+
+.task-title-link { font-family:'Montserrat', sans-serif; font-weight:600; color:#6BB1B7; text-decoration:none; }
+.task-title-link:hover { color:#4e8b90; text-decoration:underline; }
+
+.status-badge, .priority-badge {
+  font-family:'Montserrat', sans-serif; font-weight:600; font-size:16px; color:#6BB1B7; padding:4px 10px; border-radius:6px;
+  background-color: rgba(255,255,255,0.6); box-shadow:0 0 6px rgba(0,121,107,0.4); margin-left:8px; display:inline-block; transition:all 0.3s ease;
+}
+.status-badge:hover, .priority-badge:hover { color:#4e8b90; background-color: rgba(255,255,255,0.8); box-shadow:0 0 8px rgba(0,121,107,0.6); }
+</style>
+
+<script>
+function createParticles(x, y) {
+    for (let i=0;i<100;i++) {
+        const p=document.createElement("div");
+        p.className="particle";
+        document.body.appendChild(p);
+        const size=Math.random()*3+3;
+        p.style.width=size+"px";
+        p.style.height=size+"px";
+        p.style.left=x+"px";
+        p.style.top=y+"px";
+        const angle=Math.random()*2*Math.PI;
+        const distance=Math.random()*600+200;
+        const dx=Math.cos(angle)*distance;
+        const dy=Math.sin(angle)*distance;
+        requestAnimationFrame(()=>{ p.style.transform=`translate(${dx}px,${dy}px) scale(0.5)`; p.style.opacity="0"; });
+        p.addEventListener("transitionend", ()=>p.remove());
+    }
+}
+
+
+function bindParticleButtons() {
+    const buttons = document.querySelectorAll(".particle-btn");
+    buttons.forEach(btn=>{
+        btn.addEventListener("mousedown", e=>{
+            e.preventDefault();
+            const rect=btn.getBoundingClientRect();
+            const x=rect.left+rect.width/2;
+            const y=rect.top+rect.height/2;
+            createParticles(x,y);
+
+            
+            if(btn.tagName==="A") {
+                setTimeout(()=>{ window.location=btn.href; }, 250);
+            }
+            
+            else if(btn.type==="submit") {
+                const form=btn.closest("form");
+                setTimeout(()=>{ form.submit(); }, 250);
+            }
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", ()=>{ bindParticleButtons(); });
+</script>
+{% endblock %}
